@@ -50,6 +50,9 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Route.GameOver(streak, isNewRecord)) {
                                         popUpTo(Route.Home) { inclusive = false }
                                     }
+                                },
+                                onNavigateHome = {
+                                    navController.popBackStack(Route.Home, inclusive = false)
                                 }
                             )
                         }

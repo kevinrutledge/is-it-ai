@@ -1,5 +1,6 @@
 package com.example.isitai.ui.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,7 @@ import com.example.isitai.viewmodel.GameViewModel
 fun GameScreen(
     viewModel: GameViewModel,
     onContinueToGameOver: (streak: Int, isNewRecord: Boolean) -> Unit,
+    onNavigateHome: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val gameState = viewModel.gameState
@@ -59,6 +61,13 @@ fun GameScreen(
         else -> null
     }
     val isIncorrect = gameState is GameState.IncorrectFeedback
+
+    BackHandler(enabled = gameState is GameState.Playing || isIncorrect) {
+        if (gameState is GameState.Playing) {
+            onNavigateHome()
+        }
+        // During feedback, consume back press but do nothing
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         // Game content layer
