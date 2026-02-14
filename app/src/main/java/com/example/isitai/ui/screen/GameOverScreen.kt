@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 fun GameOverScreen(
     streak: Int,
     isNewRecord: Boolean,
+    previousBest: Int,
     onPlayAgain: () -> Unit,
     onHome: () -> Unit,
     modifier: Modifier = Modifier
@@ -28,6 +29,7 @@ fun GameOverScreen(
         if (isNewRecord) {
             Text("New Record!")
         }
+        Text("Previous best: $previousBest")
         Button(onClick = onPlayAgain) {
             Text("Play Again")
         }

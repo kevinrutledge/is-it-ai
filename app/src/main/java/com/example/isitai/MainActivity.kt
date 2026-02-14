@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -17,6 +18,7 @@ import com.example.isitai.ui.screen.GameOverScreen
 import com.example.isitai.ui.screen.GameScreen
 import com.example.isitai.ui.screen.HomeScreen
 import com.example.isitai.ui.theme.IsItAITheme
+import com.example.isitai.viewmodel.GameViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +26,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             IsItAITheme {
+                val viewModel: GameViewModel = viewModel(factory = GameViewModel.Factory)
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val navController = rememberNavController()
                     NavHost(
@@ -33,16 +36,18 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable<Route.Home> {
                             HomeScreen(
-                                highScore = 0,
+                                highScore = viewModel.highScore,
                                 onPlayClick = {
+                                    viewModel.startGame()
                                     navController.navigate(Route.Game)
                                 }
                             )
                         }
                         composable<Route.Game> {
                             GameScreen(
-                                onEndGame = {
-                                    navController.navigate(Route.GameOver(streak = 0, isNewRecord = false)) {
+                                viewModel = viewModel,
+                                onContinueToGameOver = { streak, isNewRecord ->
+                                    navController.navigate(Route.GameOver(streak, isNewRecord)) {
                                         popUpTo(Route.Home) { inclusive = false }
                                     }
                                 }
@@ -53,7 +58,9 @@ class MainActivity : ComponentActivity() {
                             GameOverScreen(
                                 streak = route.streak,
                                 isNewRecord = route.isNewRecord,
+                                previousBest = viewModel.highScore,
                                 onPlayAgain = {
+                                    viewModel.startGame()
                                     navController.navigate(Route.Game) {
                                         popUpTo(Route.Home) { inclusive = false }
                                     }
