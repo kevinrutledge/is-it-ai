@@ -52,7 +52,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
+    implementation(libs.converter.kotlinx.serialization)
     implementation(libs.coil.compose)
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
