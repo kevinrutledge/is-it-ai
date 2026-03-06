@@ -15,4 +15,7 @@ sealed class Route {
         val streak: Int,
         val isNewRecord: Boolean
     ) : Route()
+
+    @Serializable
+    data object Packs : Route()
 }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +27,7 @@ import com.example.isitai.ui.theme.PlaceholderLight
 fun HomeScreen(
     highScore: Int,
     onPlayClick: () -> Unit,
+    onManagePacksClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -77,5 +79,16 @@ fun HomeScreen(
 
         // Play Button
         PillButton(text = "Play", onClick = onPlayClick)
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Manage Packs Button
+        TextButton(onClick = onManagePacksClick) {
+            Text(
+                text = "Manage Packs",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

@@ -17,8 +17,10 @@ import com.example.isitai.ui.navigation.Route
 import com.example.isitai.ui.screen.GameOverScreen
 import com.example.isitai.ui.screen.GameScreen
 import com.example.isitai.ui.screen.HomeScreen
+import com.example.isitai.ui.screen.PacksScreen
 import com.example.isitai.ui.theme.IsItAITheme
 import com.example.isitai.viewmodel.GameViewModel
+import com.example.isitai.viewmodel.PackViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +42,9 @@ class MainActivity : ComponentActivity() {
                                 onPlayClick = {
                                     viewModel.startGame()
                                     navController.navigate(Route.Game)
+                                },
+                                onManagePacksClick = {
+                                    navController.navigate(Route.Packs)
                                 }
                             )
                         }
@@ -70,6 +75,17 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onHome = {
                                     navController.popBackStack(Route.Home, inclusive = false)
+                                }
+                            )
+                        }
+                        composable<Route.Packs> {
+                            val packViewModel: PackViewModel = viewModel(
+                                factory = PackViewModel.Factory
+                            )
+                            PacksScreen(
+                                viewModel = packViewModel,
+                                onNavigateBack = {
+                                    navController.popBackStack()
                                 }
                             )
                         }
