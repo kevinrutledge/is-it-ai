@@ -1,8 +1,10 @@
 package com.example.isitai
 
 import android.app.Application
+import com.example.isitai.data.local.FileDownloader
 import com.example.isitai.data.remote.ContentApiService
 import com.example.isitai.data.repository.ContentRepository
+import com.example.isitai.data.repository.PackRepository
 import kotlinx.serialization.json.Json
 import okhttp3.Cache
 import okhttp3.MediaType.Companion.toMediaType
@@ -13,6 +15,7 @@ import java.io.File
 
 class IsItAIApplication : Application() {
     lateinit var contentRepository: ContentRepository
+    lateinit var packRepository: PackRepository
 
     override fun onCreate() {
         super.onCreate()
@@ -33,6 +36,9 @@ class IsItAIApplication : Application() {
                 .create(ContentApiService::class.java)
         }
 
+        val fileDownloader = FileDownloader(okHttpClient)
+
         contentRepository = ContentRepository(contentService, applicationContext)
+        packRepository = PackRepository(contentService, fileDownloader, applicationContext)
     }
 }
