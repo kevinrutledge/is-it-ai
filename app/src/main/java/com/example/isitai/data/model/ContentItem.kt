@@ -15,7 +15,8 @@ data class ContentItem(
     val attribution: Attribution? = null,
     val whyItLookedAI: String? = null,
     val story: String? = null,
-    val annotations: List<Annotation> = emptyList()
+    val annotations: List<Annotation> = emptyList(),
+    val packageId: String = "core"
 ) {
     val isAI: Boolean get() = type == "ai"
     val isReal: Boolean get() = type == "real"
