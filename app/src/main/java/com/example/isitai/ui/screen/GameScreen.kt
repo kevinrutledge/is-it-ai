@@ -80,7 +80,7 @@ fun GameScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             if (currentItem != null) {
-                val imageUrl = currentItem.resolveImageUrl(viewModel.contentSource)
+                val imageUrl = viewModel.resolveImageUrl(currentItem)
                 var imageSize by remember { mutableStateOf(IntSize.Zero) }
 
                 Box(

@@ -1,9 +1,6 @@
 package com.example.isitai.data.model
 
-import com.example.isitai.data.repository.ContentRepository.ContentSource
 import kotlinx.serialization.Serializable
-
-private const val BASE_URL = "https://kevinrutledge.github.io/is-it-ai-content/"
 
 @Serializable
 data class ContentItem(
@@ -20,11 +17,4 @@ data class ContentItem(
 ) {
     val isAI: Boolean get() = type == "ai"
     val isReal: Boolean get() = type == "real"
-
-    fun resolveImageUrl(source: ContentSource): String {
-        return when (source) {
-            ContentSource.REMOTE -> BASE_URL + filename
-            ContentSource.BUNDLED -> "file:///android_asset/$filename"
-        }
-    }
 }

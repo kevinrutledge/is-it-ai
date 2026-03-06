@@ -34,8 +34,6 @@ class GameViewModel(
         private set
     var highScore by mutableStateOf(0)
         private set
-    val contentSource: ContentRepository.ContentSource
-        get() = contentRepository.contentSource
 
     private var _contentItems: List<ContentItem> = emptyList()
     private val _usedIds: MutableSet<String> = mutableSetOf()
@@ -56,6 +54,10 @@ class GameViewModel(
                 .map { prefs -> prefs[HIGH_SCORE_KEY] ?: 0 }
                 .collect { highScore = it }
         }
+    }
+
+    fun resolveImageUrl(item: ContentItem): String {
+        return contentRepository.resolveImageUrl(item)
     }
 
     fun startGame() {
