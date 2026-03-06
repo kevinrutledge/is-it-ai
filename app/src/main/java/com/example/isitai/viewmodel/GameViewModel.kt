@@ -12,12 +12,14 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.isitai.IsItAIApplication
 import com.example.isitai.data.HIGH_SCORE_KEY
+import com.example.isitai.data.SELECTED_PACKS_KEY
 import com.example.isitai.data.dataStore
 import com.example.isitai.data.model.ContentItem
 import com.example.isitai.data.model.ContentUiState
 import com.example.isitai.data.model.GameState
 import com.example.isitai.data.repository.ContentRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -42,7 +44,10 @@ class GameViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             contentState = ContentUiState.Loading
             try {
-                val items = contentRepository.getContent()
+                val selectedPacks = getApplication<Application>().dataStore.data
+                    .map { prefs -> prefs[SELECTED_PACKS_KEY] ?: emptySet() }
+                    .first()
+                val items = contentRepository.getContent(selectedPacks)
                 _contentItems = items
                 contentState = ContentUiState.Ready(items)
             } catch (e: Exception) {
