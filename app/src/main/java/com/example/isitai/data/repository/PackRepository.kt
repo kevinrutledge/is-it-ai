@@ -55,7 +55,11 @@ class PackRepository(
             }
 
             finalDir.deleteRecursively()
-            tempDir.renameTo(finalDir)
+            if (!tempDir.renameTo(finalDir)) {
+                tempDir.deleteRecursively()
+                emit(DownloadState.Error("Failed to install pack"))
+                return@flow
+            }
             emit(DownloadState.Installed)
         } catch (e: Exception) {
             tempDir.deleteRecursively()
@@ -75,10 +79,12 @@ class PackRepository(
     fun getInstalledPackIds(): List<String> {
         val dir = packsDir
         if (!dir.exists()) return emptyList()
-        return dir.listFiles()
-            ?.filter { it.isDirectory && File(it, "manifest.json").exists() }
-            ?.map { it.name }
-            ?: emptyList()
+        val dirs = dir.listFiles() ?: return emptyList()
+        dirs.filter { it.isDirectory && it.name.endsWith("_temp") }
+            .forEach { it.deleteRecursively() }
+        return dirs
+            .filter { it.isDirectory && !it.name.endsWith("_temp") && File(it, "manifest.json").exists() }
+            .map { it.name }
     }
 
     fun getPackContent(packId: String): List<ContentItem> {

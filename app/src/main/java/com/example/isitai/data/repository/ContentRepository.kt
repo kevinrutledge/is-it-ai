@@ -10,16 +10,10 @@ class ContentRepository(
     private val apiService: ContentApiService,
     private val context: Context
 ) {
-    var contentSource: ContentSource = ContentSource.BUNDLED
-        private set
-
     suspend fun getContent(): List<ContentItem> {
         return try {
-            val items = apiService.getContentManifest()
-            contentSource = ContentSource.REMOTE
-            items
-        } catch (e: Exception) {
-            contentSource = ContentSource.BUNDLED
+            apiService.getContentManifest()
+        } catch (_: Exception) {
             loadFromAssets()
         }
     }
@@ -34,10 +28,7 @@ class ContentRepository(
 
     fun resolveImageUrl(item: ContentItem): String {
         return if (item.packageId == "core") {
-            when (contentSource) {
-                ContentSource.REMOTE -> BASE_URL + item.filename
-                ContentSource.BUNDLED -> "file:///android_asset/${item.filename}"
-            }
+            "file:///android_asset/${item.filename}"
         } else {
             val packFile = File(context.filesDir, "packs/${item.packageId}/${item.filename}")
             "file://${packFile.absolutePath}"
@@ -53,13 +44,10 @@ class ContentRepository(
     private fun loadPackFromDisk(packId: String): List<ContentItem> {
         val manifestFile = File(context.filesDir, "packs/$packId/manifest.json")
         if (!manifestFile.exists()) return emptyList()
-        val text = manifestFile.readText()
-        return Json.decodeFromString(text)
-    }
-
-    enum class ContentSource { REMOTE, BUNDLED }
-
-    companion object {
-        private const val BASE_URL = "https://kevinrutledge.github.io/is-it-ai-content/"
+        return try {
+            Json.decodeFromString(manifestFile.readText())
+        } catch (_: Exception) {
+            emptyList()
+        }
     }
 }
