@@ -1,63 +1,52 @@
 package com.example.isitai.viewmodel
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.datastore.preferences.core.edit
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.isitai.IsItAIApplication
-import com.example.isitai.data.HIGH_SCORE_KEY
-import com.example.isitai.data.SELECTED_PACKS_KEY
-import com.example.isitai.data.dataStore
 import com.example.isitai.data.model.ContentItem
-import com.example.isitai.data.model.ContentUiState
 import com.example.isitai.data.model.GameState
 import com.example.isitai.data.repository.ContentRepository
+import com.example.isitai.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class GameViewModel(
-    application: Application,
-    private val contentRepository: ContentRepository
-) : AndroidViewModel(application) {
+    private val contentRepository: ContentRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
+) : ViewModel() {
 
     var gameState by mutableStateOf<GameState>(GameState.Idle)
-        private set
-    var contentState by mutableStateOf<ContentUiState>(ContentUiState.Loading)
         private set
     var streak by mutableStateOf(0)
         private set
     var highScore by mutableStateOf(0)
         private set
+    var previousCorrectItem by mutableStateOf<ContentItem?>(null)
+        private set
 
     private var _contentItems: List<ContentItem> = emptyList()
     private val _usedIds: MutableSet<String> = mutableSetOf()
+    private var _savedPlayingItem: ContentItem? = null
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            contentState = ContentUiState.Loading
             try {
-                val selectedPacks = getApplication<Application>().dataStore.data
-                    .map { prefs -> prefs[SELECTED_PACKS_KEY] ?: emptySet() }
-                    .first()
-                val items = contentRepository.getContent(selectedPacks)
-                _contentItems = items
-                contentState = ContentUiState.Ready(items)
-            } catch (e: Exception) {
-                contentState = ContentUiState.Error(e.message ?: "Failed to load content")
+                val selectedPacks = userPreferencesRepository.selectedPacksFlow.first()
+                _contentItems = contentRepository.getContent(selectedPacks)
+            } catch (_: Exception) {
+                // Content will be loaded on startGame()
             }
         }
         viewModelScope.launch {
-            getApplication<Application>().dataStore.data
-                .map { prefs -> prefs[HIGH_SCORE_KEY] ?: 0 }
-                .collect { highScore = it }
+            userPreferencesRepository.highScoreFlow.collect { highScore = it }
         }
     }
 
@@ -66,57 +55,71 @@ class GameViewModel(
     }
 
     fun startGame() {
-        if (contentState !is ContentUiState.Ready) return
-        streak = 0
-        _usedIds.clear()
-        val item = selectNextItem() ?: return
-        gameState = GameState.Playing(item)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val selectedPacks = userPreferencesRepository.selectedPacksFlow.first()
+                _contentItems = contentRepository.getContent(selectedPacks)
+            } catch (_: Exception) {
+                return@launch
+            }
+            streak = 0
+            _usedIds.clear()
+            previousCorrectItem = null
+            _savedPlayingItem = null
+            val item = selectNextItem() ?: return@launch
+            gameState = GameState.Playing(item)
+        }
     }
 
     fun submitAnswer(isAI: Boolean) {
         val current = gameState as? GameState.Playing ?: return
         val correct = current.item.isAI == isAI
         if (correct) {
+            previousCorrectItem = current.item
             streak++
             val next = selectNextItem()
             if (next != null) {
                 gameState = GameState.Playing(next)
             } else {
-                gameState = GameState.GameOver(streak = streak, isNewRecord = streak > highScore)
+                val isNewRecord = streak > highScore
+                if (isNewRecord) {
+                    highScore = streak
+                    viewModelScope.launch(Dispatchers.IO) {
+                        userPreferencesRepository.saveHighScore(streak)
+                    }
+                }
+                gameState = GameState.AllComplete(streak = streak, isNewRecord = isNewRecord)
             }
         } else {
             if (streak > highScore) {
                 highScore = streak
                 viewModelScope.launch(Dispatchers.IO) {
-                    getApplication<Application>().dataStore.edit { prefs ->
-                        prefs[HIGH_SCORE_KEY] = streak
-                    }
+                    userPreferencesRepository.saveHighScore(streak)
                 }
             }
             gameState = GameState.IncorrectFeedback(current.item)
         }
     }
 
+    fun reviewPreviousCorrect() {
+        val prev = previousCorrectItem ?: return
+        val current = gameState as? GameState.Playing ?: return
+        _savedPlayingItem = current.item
+        gameState = GameState.CorrectFeedback(prev)
+    }
+
+    fun returnToPlaying() {
+        val saved = _savedPlayingItem ?: return
+        gameState = GameState.Playing(saved)
+        _savedPlayingItem = null
+    }
+
     fun continueToGameOver() {
-        gameState = GameState.GameOver(streak = streak, isNewRecord = false)
+        gameState = GameState.GameOver(streak = streak, isNewRecord = streak >= highScore && streak > 0)
     }
 
     private fun selectNextItem(): ContentItem? {
-        val difficulty = when {
-            streak <= 2 -> "easy"
-            streak <= 6 -> "medium"
-            else -> "hard"
-        }
-        var candidates = _contentItems.filter {
-            it.difficulty == difficulty && it.id !in _usedIds
-        }
-        if (candidates.isEmpty()) {
-            _usedIds.removeAll { id -> _contentItems.any { it.id == id && it.difficulty == difficulty } }
-            candidates = _contentItems.filter { it.difficulty == difficulty }
-        }
-        if (candidates.isEmpty()) {
-            candidates = _contentItems.filter { it.id !in _usedIds }
-        }
+        val candidates = _contentItems.filter { it.id !in _usedIds }
         val item = candidates.randomOrNull() ?: return null
         _usedIds.add(item.id)
         return item
@@ -125,9 +128,8 @@ class GameViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
-                    as IsItAIApplication
-                GameViewModel(app, app.contentRepository)
+                val app = this[APPLICATION_KEY] as IsItAIApplication
+                GameViewModel(app.contentRepository, app.userPreferencesRepository)
             }
         }
     }

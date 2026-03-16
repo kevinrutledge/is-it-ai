@@ -1,30 +1,32 @@
 package com.example.isitai.viewmodel
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.datastore.preferences.core.edit
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.isitai.IsItAIApplication
-import com.example.isitai.data.SELECTED_PACKS_KEY
-import com.example.isitai.data.dataStore
 import com.example.isitai.data.model.DownloadState
 import com.example.isitai.data.model.PackMetadata
+import com.example.isitai.data.repository.ContentRepository
 import com.example.isitai.data.repository.PackRepository
+import com.example.isitai.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class PackViewModel(
-    application: Application,
-    private val packRepository: PackRepository
-) : AndroidViewModel(application) {
+    private val contentRepository: ContentRepository,
+    private val packRepository: PackRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
+) : ViewModel() {
+
+    var coreItemCount by mutableStateOf(0)
+        private set
 
     var availablePacks by mutableStateOf<List<PackMetadata>>(emptyList())
         private set
@@ -40,6 +42,18 @@ class PackViewModel(
     init {
         loadPacks()
         loadSelectedPacks()
+        loadCoreItemCount()
+    }
+
+    private fun loadCoreItemCount() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val coreItems = contentRepository.getContent()
+                coreItemCount = coreItems.size
+            } catch (_: Exception) {
+                // Leave at 0 if loading fails
+            }
+        }
     }
 
     fun loadPacks() {
@@ -58,6 +72,8 @@ class PackViewModel(
                     }
                 }
                 downloadStates = states
+                loadSelectedPacks()
+                cleanOrphanedSelections()
             } catch (e: Exception) {
                 errorMessage = e.message ?: "Failed to load packs"
                 loadInstalledPacksFromDisk()
@@ -108,18 +124,23 @@ class PackViewModel(
 
     private fun loadSelectedPacks() {
         viewModelScope.launch {
-            val saved = getApplication<Application>().dataStore.data
-                .map { prefs -> prefs[SELECTED_PACKS_KEY] ?: emptySet() }
-                .first()
+            val saved = userPreferencesRepository.selectedPacksFlow.first()
             selectedPackIds = saved + "core"
         }
     }
 
     private fun persistSelectedPacks(packIds: Set<String>) {
         viewModelScope.launch(Dispatchers.IO) {
-            getApplication<Application>().dataStore.edit { prefs ->
-                prefs[SELECTED_PACKS_KEY] = packIds
-            }
+            userPreferencesRepository.saveSelectedPacks(packIds)
+        }
+    }
+
+    private fun cleanOrphanedSelections() {
+        val installedIds = packRepository.getInstalledPackIds().toSet()
+        val cleaned = selectedPackIds.filter { it == "core" || it in installedIds }.toSet()
+        if (cleaned != selectedPackIds) {
+            selectedPackIds = cleaned
+            persistSelectedPacks(cleaned)
         }
     }
 
@@ -135,9 +156,8 @@ class PackViewModel(
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
-                    as IsItAIApplication
-                PackViewModel(app, app.packRepository)
+                val app = this[APPLICATION_KEY] as IsItAIApplication
+                PackViewModel(app.contentRepository, app.packRepository, app.userPreferencesRepository)
             }
         }
     }
