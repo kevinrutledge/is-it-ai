@@ -12,7 +12,6 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.isitai.IsItAIApplication
 import com.example.isitai.data.repository.PackRepository
 import com.example.isitai.data.repository.UserPreferencesRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
@@ -31,19 +30,19 @@ class SettingsViewModel(
 
     fun toggleDarkMode() {
         isDarkMode = !isDarkMode
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             userPreferencesRepository.saveDarkMode(isDarkMode)
         }
     }
 
     fun resetHighScore() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             userPreferencesRepository.resetHighScore()
         }
     }
 
     fun clearDownloadedPacks() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val installedIds = packRepository.getInstalledPackIds()
             for (packId in installedIds) {
                 packRepository.deletePack(packId)

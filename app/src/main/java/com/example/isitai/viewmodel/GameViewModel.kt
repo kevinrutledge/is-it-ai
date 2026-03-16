@@ -14,7 +14,6 @@ import com.example.isitai.data.model.ContentItem
 import com.example.isitai.data.model.GameState
 import com.example.isitai.data.repository.ContentRepository
 import com.example.isitai.data.repository.UserPreferencesRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -37,7 +36,7 @@ class GameViewModel(
     private var _savedPlayingItem: ContentItem? = null
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
                 val selectedPacks = userPreferencesRepository.selectedPacksFlow.first()
                 _contentItems = contentRepository.getContent(selectedPacks)
@@ -61,7 +60,7 @@ class GameViewModel(
         previousCorrectItem = null
         _savedPlayingItem = null
 
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
                 val selectedPacks = userPreferencesRepository.selectedPacksFlow.first()
                 _contentItems = contentRepository.getContent(selectedPacks)
@@ -86,7 +85,7 @@ class GameViewModel(
                 val isNewRecord = streak > highScore
                 if (isNewRecord) {
                     highScore = streak
-                    viewModelScope.launch(Dispatchers.IO) {
+                    viewModelScope.launch {
                         userPreferencesRepository.saveHighScore(streak)
                     }
                 }
@@ -95,7 +94,7 @@ class GameViewModel(
         } else {
             if (streak > highScore) {
                 highScore = streak
-                viewModelScope.launch(Dispatchers.IO) {
+                viewModelScope.launch {
                     userPreferencesRepository.saveHighScore(streak)
                 }
             }

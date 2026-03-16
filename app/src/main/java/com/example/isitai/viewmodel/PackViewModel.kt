@@ -15,7 +15,6 @@ import com.example.isitai.data.model.PackMetadata
 import com.example.isitai.data.repository.ContentRepository
 import com.example.isitai.data.repository.PackRepository
 import com.example.isitai.data.repository.UserPreferencesRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -46,7 +45,7 @@ class PackViewModel(
     }
 
     private fun loadCoreItemCount() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             try {
                 val coreItems = contentRepository.getContent()
                 coreItemCount = coreItems.size
@@ -57,7 +56,7 @@ class PackViewModel(
     }
 
     fun loadPacks() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             isLoading = true
             errorMessage = null
             try {
@@ -95,7 +94,7 @@ class PackViewModel(
     }
 
     fun deletePack(packId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             packRepository.deletePack(packId)
             downloadStates = downloadStates + (packId to DownloadState.NotDownloaded)
             togglePackSelection(packId, selected = false)
@@ -130,7 +129,7 @@ class PackViewModel(
     }
 
     private fun persistSelectedPacks(packIds: Set<String>) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             userPreferencesRepository.saveSelectedPacks(packIds)
         }
     }

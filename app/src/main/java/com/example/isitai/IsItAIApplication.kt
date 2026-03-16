@@ -5,8 +5,11 @@ import com.example.isitai.data.dataStore
 import com.example.isitai.data.local.FileDownloader
 import com.example.isitai.data.remote.ContentApiService
 import com.example.isitai.data.repository.ContentRepository
+import com.example.isitai.data.repository.ContentRepositoryImpl
 import com.example.isitai.data.repository.PackRepository
+import com.example.isitai.data.repository.PackRepositoryImpl
 import com.example.isitai.data.repository.UserPreferencesRepository
+import com.example.isitai.data.repository.UserPreferencesRepositoryImpl
 import kotlinx.serialization.json.Json
 import okhttp3.Cache
 import okhttp3.MediaType.Companion.toMediaType
@@ -41,8 +44,8 @@ class IsItAIApplication : Application() {
 
         val fileDownloader = FileDownloader(okHttpClient)
 
-        contentRepository = ContentRepository(contentService, applicationContext)
-        packRepository = PackRepository(contentService, fileDownloader, applicationContext)
-        userPreferencesRepository = UserPreferencesRepository(dataStore)
+        contentRepository = ContentRepositoryImpl(contentService, applicationContext)
+        packRepository = PackRepositoryImpl(contentService, fileDownloader, applicationContext)
+        userPreferencesRepository = UserPreferencesRepositoryImpl(dataStore)
     }
 }
