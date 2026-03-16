@@ -41,7 +41,6 @@ class GameViewModel(
                 val selectedPacks = userPreferencesRepository.selectedPacksFlow.first()
                 _contentItems = contentRepository.getContent(selectedPacks)
             } catch (_: Exception) {
-                // Content will be loaded on startGame()
             }
         }
         viewModelScope.launch {

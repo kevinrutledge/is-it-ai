@@ -1,4 +1,4 @@
-Is It AI? - Fair Use and Copyright Compliance Policy
+Is It AI? - Fair Use Policy
 
 About This Policy
 
@@ -10,13 +10,13 @@ This application may contain copyrighted material that has not been specifically
 
 Each copyrighted image appears alongside educational commentary: artifact annotations, explanations of what makes the image look real or artificial, photographer attribution, and the story behind the image. The app does not compete with any market for the original photographs.
 
-This use is consistent with Title 17, Section 107 of the United States Code (fair use), and with the Code of Best Practices in Fair Use for Media Literacy Education published by the Center for Media and Social Impact at American University.
+This use complies with Title 17, Section 107 of the United States Code (fair use), and with the Code of Best Practices in Fair Use for Media Literacy Education published by the Center for Media and Social Impact at American University.
 
 We do not support any use of materials from this application beyond fair use.
 
 How the Four Fair Use Factors Apply
 
-Purpose and character. The app is non-commercial and educational. It uses photographs as subjects of analysis, not as decorative content. Courts have held that educational uses serving a different purpose than the original work weigh in favor of fair use.
+Purpose and character. The app is non-commercial and educational. It uses photographs as subjects of analysis, not as decorative content. Courts have held that educational uses that serve a different purpose than the original work weigh in favor of fair use.
 
 Nature of the works. Photographs are creative works, which usually weighs against fair use. However, the app uses them not for their artistic value but to analyze their visual properties.
 
@@ -40,7 +40,7 @@ For AI-generated images:
 
 Attribution
 
-All images are credited to their creators. Attribution appears in the app's feedback screens and includes the creator's name, year, source, and license type where applicable.
+All images are credited to their creators. Attribution appears in the app's feedback screens and includes the creator's name, year, source, and license type when available.
 
 Content Removal (DMCA)
 
