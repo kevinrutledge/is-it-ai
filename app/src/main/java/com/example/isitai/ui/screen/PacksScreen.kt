@@ -7,17 +7,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -30,9 +36,22 @@ import com.example.isitai.viewmodel.PackViewModel
 @Composable
 fun PacksScreen(
     viewModel: PackViewModel,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var packPendingDelete by rememberSaveable { mutableStateOf<String?>(null) }
+    var packPendingDeleteName by rememberSaveable { mutableStateOf("") }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadPacks()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -41,14 +60,6 @@ fun PacksScreen(
                         text = "Content Packs",
                         style = MaterialTheme.typography.titleLarge
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
                 }
             )
         },
@@ -84,8 +95,8 @@ fun PacksScreen(
                     id = "core",
                     name = "Core Pack",
                     description = "Starter images bundled with the app",
-                    itemCount = 9,
-                    difficulty = "mixed"
+                    itemCount = viewModel.coreItemCount,
+                    sizeMb = 0.0
                 )
                 val allPacks = listOf(corePack) + viewModel.availablePacks
 
@@ -111,12 +122,36 @@ fun PacksScreen(
                             isSelected = isSelected,
                             isCore = isCore,
                             onDownload = { viewModel.downloadPack(pack.id) },
-                            onDelete = { viewModel.deletePack(pack.id) },
+                            onDelete = {
+                                packPendingDelete = pack.id
+                                packPendingDeleteName = pack.name
+                            },
                             onToggleSelection = { viewModel.togglePackSelection(pack.id) }
                         )
                     }
                 }
             }
         }
+    }
+
+    if (packPendingDelete != null) {
+        AlertDialog(
+            title = { Text("Delete '$packPendingDeleteName'?") },
+            text = { Text("You'll need to re-download it to use it again.") },
+            onDismissRequest = { packPendingDelete = null },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deletePack(packPendingDelete!!)
+                    packPendingDelete = null
+                }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { packPendingDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

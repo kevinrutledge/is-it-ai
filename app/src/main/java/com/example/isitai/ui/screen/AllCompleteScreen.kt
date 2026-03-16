@@ -20,7 +20,7 @@ import com.example.isitai.ui.components.StreakCounter
 import com.example.isitai.ui.components.StreakSize
 
 @Composable
-fun GameOverScreen(
+fun AllCompleteScreen(
     streak: Int,
     isNewRecord: Boolean,
     previousBest: Int,
@@ -34,9 +34,25 @@ fun GameOverScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Game Over",
+            text = "All Clear!",
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "You identified every image",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "More packs coming soon",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(16.dp))

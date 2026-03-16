@@ -1,33 +1,29 @@
 package com.example.isitai.ui.screen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.isitai.R
 import com.example.isitai.ui.components.PillButton
 import com.example.isitai.ui.components.StreakCounter
 import com.example.isitai.ui.components.StreakSize
-import com.example.isitai.ui.theme.PlaceholderLight
 
 @Composable
 fun HomeScreen(
     highScore: Int,
     onPlayClick: () -> Unit,
-    onManagePacksClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -39,11 +35,11 @@ fun HomeScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(PlaceholderLight)
+            Icon(
+                painter = painterResource(id = R.drawable.app_logo),
+                contentDescription = "Is It AI? logo",
+                tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.size(80.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -79,16 +75,5 @@ fun HomeScreen(
 
         // Play Button
         PillButton(text = "Play", onClick = onPlayClick)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Manage Packs Button
-        TextButton(onClick = onManagePacksClick) {
-            Text(
-                text = "Manage Packs",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
