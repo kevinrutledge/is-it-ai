@@ -17,5 +17,14 @@ sealed class Route {
     ) : Route()
 
     @Serializable
+    data class AllComplete(
+        val streak: Int,
+        val isNewRecord: Boolean
+    ) : Route()
+
+    @Serializable
     data object Packs : Route()
+
+    @Serializable
+    data object Settings : Route()
 }
