@@ -16,7 +16,8 @@ import com.example.isitai.data.model.ContentItem
 fun AIFeedbackContent(
     item: ContentItem,
     onContinue: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    continueLabel: String = "Continue"
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -48,7 +49,7 @@ fun AIFeedbackContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        PillButton(text = "Continue", onClick = onContinue)
+        PillButton(text = continueLabel, onClick = onContinue)
 
         Spacer(modifier = Modifier.height(16.dp))
     }

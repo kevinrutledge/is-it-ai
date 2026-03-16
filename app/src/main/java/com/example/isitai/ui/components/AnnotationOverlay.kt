@@ -19,6 +19,8 @@ import com.example.isitai.ui.theme.AnnotationColors
 fun AnnotationOverlay(
     annotations: List<Annotation>,
     imageSize: IntSize,
+    scrimAlpha: Float,
+    annotationAlpha: Float,
     modifier: Modifier = Modifier
 ) {
     Canvas(
@@ -26,6 +28,11 @@ fun AnnotationOverlay(
             compositingStrategy = CompositingStrategy.Offscreen
         }
     ) {
+        if (scrimAlpha <= 0f && annotationAlpha <= 0f) return@Canvas
+
+        drawRect(color = Color.Black.copy(alpha = scrimAlpha))
+
+        if (annotations.isEmpty() || annotationAlpha <= 0f) return@Canvas
         if (imageSize.width == 0 || imageSize.height == 0) return@Canvas
 
         val scaleFactor = minOf(
@@ -35,17 +42,13 @@ fun AnnotationOverlay(
         val offsetX = (size.width - imageSize.width * scaleFactor) / 2f
         val offsetY = (size.height - imageSize.height * scaleFactor) / 2f
 
-        // Draw scrim over entire area
-        drawRect(color = Color.Black.copy(alpha = 0.32f))
-
-        // Cut out spotlight holes for each annotation
         for (annotation in annotations) {
             val cx = offsetX + annotation.x * imageSize.width * scaleFactor
             val cy = offsetY + annotation.y * imageSize.height * scaleFactor
             val r = annotation.radius * imageSize.width * scaleFactor
 
             drawCircle(
-                color = Color.Black,
+                color = Color.Black.copy(alpha = annotationAlpha),
                 radius = r,
                 center = Offset(cx, cy),
                 style = Fill,
@@ -53,15 +56,14 @@ fun AnnotationOverlay(
             )
         }
 
-        // Draw colored stroke circles on top
         for (annotation in annotations) {
             val cx = offsetX + annotation.x * imageSize.width * scaleFactor
             val cy = offsetY + annotation.y * imageSize.height * scaleFactor
             val r = annotation.radius * imageSize.width * scaleFactor
-            val color = artifactColor(annotation.artifactType)
+            val color = AnnotationColors.forType(annotation.artifactType)
 
             drawCircle(
-                color = color,
+                color = color.copy(alpha = annotationAlpha),
                 radius = r,
                 center = Offset(cx, cy),
                 style = Stroke(width = 3.dp.toPx())
@@ -70,13 +72,3 @@ fun AnnotationOverlay(
     }
 }
 
-private fun artifactColor(type: String): Color {
-    return when (type) {
-        "anatomical" -> AnnotationColors.Anatomical
-        "texture" -> AnnotationColors.Texture
-        "background" -> AnnotationColors.Background
-        "facial" -> AnnotationColors.Facial
-        "lighting" -> AnnotationColors.Lighting
-        else -> Color.Gray
-    }
-}

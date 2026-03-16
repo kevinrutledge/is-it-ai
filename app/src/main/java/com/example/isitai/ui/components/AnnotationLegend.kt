@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.isitai.data.model.Annotation
@@ -34,7 +33,7 @@ fun AnnotationLegend(
     ) {
         for (type in uniqueTypes) {
             val annotation = annotations.first { it.artifactType == type }
-            val color = artifactColor(type)
+            val color = AnnotationColors.forType(type)
             val label = artifactLabel(type)
 
             Row(
@@ -53,7 +52,7 @@ fun AnnotationLegend(
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = "— ${annotation.description}",
+                    text = annotation.description,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -62,16 +61,6 @@ fun AnnotationLegend(
     }
 }
 
-private fun artifactColor(type: String): Color {
-    return when (type) {
-        "anatomical" -> AnnotationColors.Anatomical
-        "texture" -> AnnotationColors.Texture
-        "background" -> AnnotationColors.Background
-        "facial" -> AnnotationColors.Facial
-        "lighting" -> AnnotationColors.Lighting
-        else -> Color.Gray
-    }
-}
 
 private fun artifactLabel(type: String): String {
     return when (type) {

@@ -4,8 +4,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -15,7 +18,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.isitai.data.model.DownloadState
 import com.example.isitai.data.model.PackMetadata
 
@@ -45,18 +51,35 @@ fun PackCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            // Optional thumbnail
+            if (pack.thumbnailUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = pack.thumbnailUrl,
+                    contentDescription = "${pack.name} thumbnail",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
                 Text(
                     text = pack.name,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = pack.description,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                val sizeText = if (isCore) "Included" else "%.1f MB".format(pack.sizeMb)
                 Text(
-                    text = "${pack.itemCount} images · ${pack.difficulty}",
+                    text = "${pack.itemCount} images · $sizeText",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -116,7 +139,7 @@ fun PackCard(
             is DownloadState.Error -> {
                 Column(modifier = Modifier.padding(top = 12.dp)) {
                     Text(
-                        text = downloadState.message,
+                        text = "Download failed. Check your connection and try again.",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.error
                     )

@@ -2,6 +2,10 @@ package com.example.isitai.ui.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,12 +25,16 @@ fun StreakCounter(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "\uD83D\uDD25",
-            style = when (size) {
-                StreakSize.Small -> MaterialTheme.typography.titleMedium
-                StreakSize.Large -> MaterialTheme.typography.displayLarge
-            }
+        Icon(
+            imageVector = Icons.Filled.LocalFireDepartment,
+            contentDescription = "Streak",
+            tint = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.size(
+                when (size) {
+                    StreakSize.Small -> 28.dp
+                    StreakSize.Large -> 52.dp
+                }
+            )
         )
         Text(
             text = "$streak",
