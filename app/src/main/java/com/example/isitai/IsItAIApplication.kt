@@ -26,6 +26,8 @@ class IsItAIApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        val baseUrl = "https://kevinrutledge.github.io/is-it-ai-content/"
+
         val cacheDir = File(cacheDir, "http_cache")
         val okHttpClient = OkHttpClient.Builder()
             .cache(Cache(cacheDir, 50L * 1024L * 1024L))
@@ -35,7 +37,7 @@ class IsItAIApplication : Application() {
 
         val contentService: ContentApiService by lazy {
             Retrofit.Builder()
-                .baseUrl("https://kevinrutledge.github.io/is-it-ai-content/")
+                .baseUrl(baseUrl)
                 .client(okHttpClient)
                 .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
                 .build()
@@ -45,7 +47,7 @@ class IsItAIApplication : Application() {
         val fileDownloader = FileDownloader(okHttpClient)
 
         contentRepository = ContentRepositoryImpl(contentService, applicationContext)
-        packRepository = PackRepositoryImpl(contentService, fileDownloader, applicationContext)
+        packRepository = PackRepositoryImpl(contentService, fileDownloader, applicationContext, baseUrl)
         userPreferencesRepository = UserPreferencesRepositoryImpl(dataStore)
     }
 }

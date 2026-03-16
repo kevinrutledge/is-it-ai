@@ -17,14 +17,11 @@ import java.io.File
 class PackRepositoryImpl(
     private val apiService: ContentApiService,
     private val fileDownloader: FileDownloader,
-    private val context: Context
+    private val context: Context,
+    private val baseUrl: String
 ) : PackRepository {
     private val packsDir: File get() = File(context.filesDir, "packs")
     private val json = Json { ignoreUnknownKeys = true }
-
-    companion object {
-        private const val BASE_URL = "https://kevinrutledge.github.io/is-it-ai-content/"
-    }
 
     override suspend fun getAvailablePacks(): List<PackMetadata> {
         return apiService.getPackManifest()
@@ -47,7 +44,7 @@ class PackRepositoryImpl(
             emit(DownloadState.Downloading(current = 1, total = total))
 
             items.forEachIndexed { index, item ->
-                val imageUrl = "${BASE_URL}packs/$packId/${item.filename}"
+                val imageUrl = "${baseUrl}packs/$packId/${item.filename}"
                 val destination = File(tempDir, item.filename)
                 destination.parentFile?.mkdirs()
                 fileDownloader.downloadFile(imageUrl, destination)
