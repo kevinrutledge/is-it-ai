@@ -55,6 +55,12 @@ class GameViewModel(
     }
 
     fun startGame() {
+        gameState = GameState.Idle
+        streak = 0
+        _usedIds.clear()
+        previousCorrectItem = null
+        _savedPlayingItem = null
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val selectedPacks = userPreferencesRepository.selectedPacksFlow.first()
@@ -62,10 +68,6 @@ class GameViewModel(
             } catch (_: Exception) {
                 return@launch
             }
-            streak = 0
-            _usedIds.clear()
-            previousCorrectItem = null
-            _savedPlayingItem = null
             val item = selectNextItem() ?: return@launch
             gameState = GameState.Playing(item)
         }
