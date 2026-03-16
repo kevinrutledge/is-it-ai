@@ -56,30 +56,35 @@ class PackViewModel(
     }
 
     fun loadPacks() {
+        updateStatesFromDisk()
+
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
             try {
                 val packs = packRepository.getAvailablePacks()
                 availablePacks = packs
-                val states = mutableMapOf<String, DownloadState>()
-                for (pack in packs) {
-                    states[pack.id] = if (packRepository.isInstalled(pack.id)) {
-                        DownloadState.Installed
-                    } else {
-                        DownloadState.NotDownloaded
-                    }
-                }
-                downloadStates = states
+                updateStatesFromDisk()
                 loadSelectedPacks()
                 cleanOrphanedSelections()
             } catch (e: Exception) {
                 errorMessage = e.message ?: "Failed to load packs"
-                loadInstalledPacksFromDisk()
             } finally {
                 isLoading = false
             }
         }
+    }
+
+    private fun updateStatesFromDisk() {
+        val updated = mutableMapOf<String, DownloadState>()
+        for (pack in availablePacks) {
+            updated[pack.id] = if (packRepository.isInstalled(pack.id)) {
+                DownloadState.Installed
+            } else {
+                DownloadState.NotDownloaded
+            }
+        }
+        downloadStates = updated
     }
 
     fun downloadPack(packId: String) {
@@ -141,15 +146,6 @@ class PackViewModel(
             selectedPackIds = cleaned
             persistSelectedPacks(cleaned)
         }
-    }
-
-    private fun loadInstalledPacksFromDisk() {
-        val installedIds = packRepository.getInstalledPackIds()
-        val states = mutableMapOf<String, DownloadState>()
-        for (packId in installedIds) {
-            states[packId] = DownloadState.Installed
-        }
-        downloadStates = states
     }
 
     companion object {
