@@ -8,5 +8,6 @@ data class PackMetadata(
     val name: String,
     val description: String,
     val itemCount: Int,
-    val difficulty: String
+    val sizeMb: Double = 0.0,
+    val thumbnailUrl: String = ""
 )
